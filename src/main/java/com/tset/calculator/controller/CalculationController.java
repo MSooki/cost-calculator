@@ -22,13 +22,20 @@ public class CalculationController {
         }
 
         String requestId = UUID.randomUUID().toString();
-        calculationService.calculate(requestId, request.principal(), request.annualInterestRate(), request.timesPerYear(), request.years());
+        if (request.monthlyContribution() > 0) {
+            calculationService.calculate(requestId, request.principal(), request.annualInterestRate(),
+                    request.timesPerYear(), request.years(), request.monthlyContribution());
+        } else {
+            calculationService.calculate(requestId, request.principal(), request.annualInterestRate(),
+                    request.timesPerYear(), request.years());
+        }
+
         return ResponseEntity.ok(new CalculationResponse(requestId));
     }
 
     @GetMapping("/result/{requestId}")
     public ResponseEntity<?> getResult(@PathVariable String requestId) {
-        Float result = calculationService.getResult(requestId);
+        Float result = (float) calculationService.getResult(requestId);
         if (result == null) {
             return ResponseEntity.accepted().body(new MessageResponse("Result not ready yet"));
         }

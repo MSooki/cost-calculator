@@ -1,4 +1,4 @@
 package com.tset.calculator.dto;
 
-public record CalculationRequest(float principal, float annualInterestRate, int timesPerYear, int years) {
+public record CalculationRequest(float principal, float annualInterestRate, int timesPerYear, int years, float monthlyContribution) {
 }
