@@ -1,12 +1,12 @@
 package com.tset.calculator.controller;
 
-import com.tset.calculator.dto.*;
+import com.tset.calculator.dto.CalculationRequest;
 import com.tset.calculator.service.CalculationService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @RestController
 @RequestMapping("/api/calculation")
@@ -14,14 +14,16 @@ public class CalculationController {
 
     @Autowired
     private CalculationService calculationService;
+    private final AtomicInteger counterId = new AtomicInteger(0);
 
     @PostMapping("/initiate")
-    public ResponseEntity<?> initiateCalculation(@RequestBody CalculationRequest request) {
+    public int initiateCalculation(@RequestBody CalculationRequest request) {
         if (request.principal() <= 0 || request.annualInterestRate() <= 0 || request.timesPerYear() <= 0 || request.years() <= 0) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Invalid input values."));
+            throw new IllegalArgumentException("Invalid input values");
         }
 
-        String requestId = UUID.randomUUID().toString();
+        int requestId = counterId.incrementAndGet();
+
         if (request.monthlyContribution() > 0) {
             calculationService.calculate(requestId, request.principal(), request.annualInterestRate(),
                     request.timesPerYear(), request.years(), request.monthlyContribution());
@@ -30,15 +32,17 @@ public class CalculationController {
                     request.timesPerYear(), request.years());
         }
 
-        return ResponseEntity.ok(new CalculationResponse(requestId));
+        return requestId;
     }
 
     @GetMapping("/result/{requestId}")
-    public ResponseEntity<?> getResult(@PathVariable String requestId) {
-        Float result = (float) calculationService.getResult(requestId);
-        if (result == null) {
-            return ResponseEntity.accepted().body(new MessageResponse("Result not ready yet"));
-        }
-        return ResponseEntity.ok(new ResultResponse(requestId, result));
+    public Float getResult(@PathVariable int requestId) {
+        return (float) calculationService.getResult(requestId);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public void handleInvalidInput(IllegalArgumentException ex) {
+        // just return 400 status
     }
 }
