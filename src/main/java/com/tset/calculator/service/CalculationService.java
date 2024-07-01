@@ -10,7 +10,6 @@ public class CalculationService {
 
     private final ConcurrentHashMap<Integer, Double> results = new ConcurrentHashMap<>();
 
-
     @Async
     public void calculate(int requestId, float principal, float annualInterestRate, int timesPerYear, int years) {
         /*
