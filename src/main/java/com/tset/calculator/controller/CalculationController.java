@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @RestController
 @RequestMapping("/api/calculation")
+@CrossOrigin(origins = "http://localhost:3000")
 public class CalculationController {
 
     @Autowired
