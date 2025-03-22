@@ -12,15 +12,6 @@ public class CalculationService {
 
     @Async
     public void calculate(int requestId, float principal, float annualInterestRate, int timesPerYear, int years) {
-        /*
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
-         */
-
         double rate = annualInterestRate / 100;
         double A = principal * Math.pow(1 + rate / timesPerYear, timesPerYear * years);
         results.put(requestId, A);
@@ -28,21 +19,19 @@ public class CalculationService {
 
     @Async
     public void calculate(int requestId, float principal, float annualInterestRate, int timesPerYear, int years, float monthlyContribution) {
-        /*
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+        double rate = annualInterestRate / 100;
+        double compoundFactor = Math.pow(1 + rate / timesPerYear, timesPerYear * years);
+
+        // Calculate the compound interest on the principal
+        double A = principal * compoundFactor;
+
+        // Calculate the future value of each monthly contribution
+        double contributionFutureValue = 0.0;
+        for (int i = 1; i <= years * 12; i++) {
+            contributionFutureValue += monthlyContribution * Math.pow(1 + rate / timesPerYear, timesPerYear * ((years * 12 - i + 1) / 12.0));
         }
 
-         */
-
-        // Compound interest formula with regular contribution: A = P(1 + r/n)^(nt) + C(((1 + r/n)^(nt) - 1) / (r/n))
-        double rate = annualInterestRate / 100;
-        double pow = Math.pow(1 + rate / timesPerYear, timesPerYear * years);
-        double A = principal * pow;
-        A += (monthlyContribution * ((pow - 1) / (rate / timesPerYear)));
-
+        A += contributionFutureValue;
         results.put(requestId, A);
     }
 
