@@ -40,23 +40,25 @@ public class CalculationService {
         // Calculate the compound interest on the principal
         double A = principal * compoundFactor;
 
-        // Calculate the future value of each monthly contribution
+        // Future value of quarterly contributions
         double contributionFutureValue = 0.0;
-        for (int i = 1; i <= years * 12; i++) {
-            contributionFutureValue += monthlyContribution * Math.pow(1 + rate / timesPerYear, timesPerYear * ((years * 12 - i + 1) / 12.0));
+        double quarterlyContribution = monthlyContribution * 3; // 3 months per quarter
+
+        for (int q = 1; q <= years * 4; q++) { // Loop through each quarter
+            contributionFutureValue += quarterlyContribution * Math.pow(1 + rate / timesPerYear, timesPerYear * ((years * 4 - q + 1) / 4.0));
         }
 
         A += contributionFutureValue;
-        double totalContribution = monthlyContribution * 12 * years;
+        double totalContribution = monthlyContribution * 12 * years; // Sum of all contributions
         double interestEarned = A - principal - totalContribution;
-        double housePriceAtTheEndOfPeriod = housePrice * Math.pow(1 + annualHousePriceIncrease/100, years);
+        double housePriceAtTheEndOfPeriod = housePrice * Math.pow(1 + annualHousePriceIncrease / 100, years);
         int yearsToBuy = calculateYears(principal, annualInterestRate, timesPerYear, monthlyContribution, housePrice, annualHousePriceIncrease);
 
         return new CalculationResult(A, principal, interestEarned, totalContribution, yearsToBuy, housePriceAtTheEndOfPeriod);
     }
 
     private int calculateYears(float principal, float annualInterestRate, int timesPerYear,
-                                       float monthlyContribution, float housePrice, float annualHousePriceIncrease) {
+                               float monthlyContribution, float housePrice, float annualHousePriceIncrease) {
         double rate = annualInterestRate / 100;
         double houseRate = annualHousePriceIncrease / 100;
 
@@ -65,25 +67,30 @@ public class CalculationService {
         int year = 0;
 
         double previousGap = Double.MAX_VALUE;
-        int increasingGapYears = 0; // Track consecutive years where gap increases
-        final int MAX_UNAFFORDABLE_YEARS = 5; // If the gap keeps increasing for 5 years, assume it's unaffordable
+        int increasingGapYears = 0; // Track consecutive years where the gap increases
+        final int MAX_UNAFFORDABLE_YEARS = 5; // If the gap increases for 5 consecutive years, assume unaffordable
+
+        double quarterlyContribution = monthlyContribution * 3; // Group contributions into quarters
 
         while (A < currentHousePrice) {
             year++;
 
-            // Compound the investment
-            A *= Math.pow(1 + rate / timesPerYear, timesPerYear);
-            for (int i = 1; i <= 12; i++) {
-                A += monthlyContribution * Math.pow(1 + rate / timesPerYear, timesPerYear * ((12 - i + 1) / 12.0));
+            // Apply quarterly contributions (every 3 months)
+            for (int quarter = 0; quarter < 4; quarter++) {
+                // Before applying interest, add the quarterly contribution
+                A += quarterlyContribution;
+
+                // Apply interest to the total amount
+                A *= Math.pow(1 + rate / timesPerYear, timesPerYear / 4.0); // Interest applied quarterly
             }
 
-            // Increase the house price
+            // Increase house price annually
             currentHousePrice *= (1 + houseRate);
 
-            // Calculate the new gap
+            // Calculate new gap
             double currentGap = currentHousePrice - A;
 
-            // If the gap increases, track it
+            // If the gap keeps increasing, track it
             if (currentGap > previousGap) {
                 increasingGapYears++;
             } else {
@@ -92,7 +99,7 @@ public class CalculationService {
 
             // If the gap has increased for 5 consecutive years, assume affordability is impossible
             if (increasingGapYears >= MAX_UNAFFORDABLE_YEARS) {
-                return year;
+                return -1; // Indicating the house will never be affordable
             }
 
             previousGap = currentGap;
