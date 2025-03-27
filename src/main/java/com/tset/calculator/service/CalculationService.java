@@ -1,25 +1,19 @@
 package com.tset.calculator.service;
 
-import org.springframework.scheduling.annotation.Async;
+import com.tset.calculator.dto.CalculationResult;
 import org.springframework.stereotype.Service;
-
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class CalculationService {
 
-    private final ConcurrentHashMap<Integer, Double> results = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<Integer, Integer> resultYears = new ConcurrentHashMap<>();
-
-    @Async
-    public void calculate(int requestId, float principal, float annualInterestRate, int timesPerYear, int years) {
+    public CalculationResult calculate(float principal, float annualInterestRate, int timesPerYear, int years) {
         double rate = annualInterestRate / 100;
         double A = principal * Math.pow(1 + rate / timesPerYear, timesPerYear * years);
-        results.put(requestId, A);
+        double interestEarned = A - principal;
+        return new CalculationResult(A, principal, interestEarned, 0, -1, -1);
     }
 
-    @Async
-    public void calculate(int requestId, float principal, float annualInterestRate, int timesPerYear, int years, float monthlyContribution) {
+    public CalculationResult calculate(float principal, float annualInterestRate, int timesPerYear, int years, float monthlyContribution) {
         double rate = annualInterestRate / 100;
         double compoundFactor = Math.pow(1 + rate / timesPerYear, timesPerYear * years);
 
@@ -33,11 +27,36 @@ public class CalculationService {
         }
 
         A += contributionFutureValue;
-        results.put(requestId, A);
+        double totalContribution = monthlyContribution * 12 * years;
+        double interestEarned = A - principal - totalContribution;
+        return new CalculationResult(A, principal, interestEarned, totalContribution, -1, -1);
     }
 
-    @Async
-    public void calculate(int requestId, float principal, float annualInterestRate, int timesPerYear, float monthlyContribution, float housePrice, float annualHousePriceIncrease) {
+    public CalculationResult calculate(float principal, float annualInterestRate, int timesPerYear, int years,
+                                       float monthlyContribution, float housePrice, float annualHousePriceIncrease) {
+        double rate = annualInterestRate / 100;
+        double compoundFactor = Math.pow(1 + rate / timesPerYear, timesPerYear * years);
+
+        // Calculate the compound interest on the principal
+        double A = principal * compoundFactor;
+
+        // Calculate the future value of each monthly contribution
+        double contributionFutureValue = 0.0;
+        for (int i = 1; i <= years * 12; i++) {
+            contributionFutureValue += monthlyContribution * Math.pow(1 + rate / timesPerYear, timesPerYear * ((years * 12 - i + 1) / 12.0));
+        }
+
+        A += contributionFutureValue;
+        double totalContribution = monthlyContribution * 12 * years;
+        double interestEarned = A - principal - totalContribution;
+        double housePriceAtTheEndOfPeriod = housePrice * Math.pow(1 + annualHousePriceIncrease/100, years);
+        int yearsToBuy = calculateYears(principal, annualInterestRate, timesPerYear, monthlyContribution, housePrice, annualHousePriceIncrease);
+
+        return new CalculationResult(A, principal, interestEarned, totalContribution, yearsToBuy, housePriceAtTheEndOfPeriod);
+    }
+
+    private int calculateYears(float principal, float annualInterestRate, int timesPerYear,
+                                       float monthlyContribution, float housePrice, float annualHousePriceIncrease) {
         double rate = annualInterestRate / 100;
         double houseRate = annualHousePriceIncrease / 100;
 
@@ -45,7 +64,9 @@ public class CalculationService {
         double currentHousePrice = housePrice;
         int year = 0;
 
-        double previousGap = Double.MAX_VALUE; // Start with a very large gap
+        double previousGap = Double.MAX_VALUE;
+        int increasingGapYears = 0; // Track consecutive years where gap increases
+        final int MAX_UNAFFORDABLE_YEARS = 5; // If the gap keeps increasing for 5 years, assume it's unaffordable
 
         while (A < currentHousePrice) {
             year++;
@@ -62,25 +83,21 @@ public class CalculationService {
             // Calculate the new gap
             double currentGap = currentHousePrice - A;
 
-            // If the gap is increasing, it will never be affordable
+            // If the gap increases, track it
             if (currentGap > previousGap) {
-                resultYears.put(requestId, -1); // Special value: -1 means "never affordable"
-                results.put(requestId, A);
-                return;
+                increasingGapYears++;
+            } else {
+                increasingGapYears = 0; // Reset counter if the gap decreases
             }
 
-            previousGap = currentGap; // Update the previous gap
+            // If the gap has increased for 5 consecutive years, assume affordability is impossible
+            if (increasingGapYears >= MAX_UNAFFORDABLE_YEARS) {
+                return year;
+            }
+
+            previousGap = currentGap;
         }
 
-        results.put(requestId, A);
-        resultYears.put(requestId, year);
-    }
-
-    public Integer getResultYear(int requestId) {
-        return resultYears.get(requestId);
-    }
-
-    public double getResult(int requestId) {
-        return results.get(requestId);
+        return year;
     }
 }
