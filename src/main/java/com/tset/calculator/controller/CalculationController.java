@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/calculation")
-@CrossOrigin(origins = {"http://localhost:3000", "https://cost-calculator-production.up.railway.app"})
+@CrossOrigin(origins = {"http://localhost:3000", "https://cost-calculator-production.up.railway.app", "https://savematic.pro/"})
 public class CalculationController {
 
     @Autowired
