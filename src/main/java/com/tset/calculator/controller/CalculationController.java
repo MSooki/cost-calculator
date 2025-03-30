@@ -17,7 +17,7 @@ public class CalculationController {
 
     @PostMapping("/calculate")
     public CalculationResult calculation(@RequestBody CalculationRequest request) {
-        if (request.principal() <= 0 || request.annualInterestRate() <= 0 || request.timesPerYear() <= 0 || request.years() <= 0) {
+        if (request.principal() < 0 || request.annualInterestRate() < 0 || request.timesPerYear() < 0 || request.years() < 0) {
             throw new IllegalArgumentException("Invalid input values");
         }
 
