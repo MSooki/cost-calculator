@@ -6,6 +6,7 @@ public record CalculationRequest(
         int timesPerYear,
         int years,
         float monthlyContribution,
+        float monthlyContributionIncreaseAnnually,
         float housePrice,
         float annualHousePriceIncrease
 ) {}

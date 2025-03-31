@@ -29,6 +29,7 @@ public class CalculationController {
                         request.timesPerYear(),
                         request.years(),
                         request.monthlyContribution(),
+                        request.monthlyContributionIncreaseAnnually(),
                         request.housePrice(),
                         request.annualHousePriceIncrease()
                 );
@@ -42,7 +43,8 @@ public class CalculationController {
                     request.annualInterestRate(),
                     request.timesPerYear(),
                     request.years(),
-                    request.monthlyContribution()
+                    request.monthlyContribution(),
+                    request.monthlyContributionIncreaseAnnually()
             );
         } else {
             return calculationService.calculate(

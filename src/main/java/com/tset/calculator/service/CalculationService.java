@@ -13,95 +13,111 @@ public class CalculationService {
         return new CalculationResult(A, principal, interestEarned, 0, -1, -1);
     }
 
-    public CalculationResult calculate(float principal, float annualInterestRate, int timesPerYear, int years, float monthlyContribution) {
-        double rate = annualInterestRate / 100;
-        double compoundFactor = Math.pow(1 + rate / timesPerYear, timesPerYear * years);
+    public CalculationResult calculate(float principal, float annualInterestRate, int timesPerYear, int years,
+                                       float monthlyContribution, double monthlyContributionIncreaseAnnually) {
+        double rate = annualInterestRate / 100.0;
+        double contributionIncreaseFactor = 1.0 + (monthlyContributionIncreaseAnnually / 100.0);
 
-        // Calculate the compound interest on the principal
-        double A = principal * compoundFactor;
+        double currentBalance = principal;
+        double currentMonthlyContribution = monthlyContribution;
+        double totalContribution = 0;
 
-        // Calculate the future value of each monthly contribution
-        double contributionFutureValue = 0.0;
-        for (int i = 1; i <= years * 12; i++) {
-            contributionFutureValue += monthlyContribution * Math.pow(1 + rate / timesPerYear, timesPerYear * ((years * 12 - i + 1) / 12.0));
+        for (int y = 0; y < years; y++) {
+            double quarterlyContribution = currentMonthlyContribution * 3;
+            for (int q = 0; q < 4; q++) {
+                currentBalance += quarterlyContribution;
+                totalContribution += quarterlyContribution;
+                double periodsPerQuarter = (double) timesPerYear / 4.0;
+                currentBalance *= Math.pow(1 + rate / timesPerYear, periodsPerQuarter);
+            }
+            currentMonthlyContribution *= contributionIncreaseFactor; // Increase for next year
         }
 
-        A += contributionFutureValue;
-        double totalContribution = monthlyContribution * 12 * years;
-        double interestEarned = A - principal - totalContribution;
-        return new CalculationResult(A, principal, interestEarned, totalContribution, -1, -1);
+        double interestEarned = currentBalance - principal - totalContribution;
+        // Ensure CalculationResult constructor uses double
+        return new CalculationResult(currentBalance, principal, interestEarned, totalContribution, -1, -1);
     }
 
     public CalculationResult calculate(float principal, float annualInterestRate, int timesPerYear, int years,
-                                       float monthlyContribution, float housePrice, float annualHousePriceIncrease) {
-        double rate = annualInterestRate / 100;
-        double compoundFactor = Math.pow(1 + rate / timesPerYear, timesPerYear * years);
+                                       float monthlyContribution, double monthlyContributionIncreaseAnnually,
+                                       float housePrice, float annualHousePriceIncrease) {
+        double rate = annualInterestRate / 100.0;
+        double contributionIncreaseFactor = 1.0 + (monthlyContributionIncreaseAnnually / 100.0);
+        double currentBalance = principal;
+        double currentMonthlyCont = monthlyContribution;
+        double totalContribution = 0;
 
-        // Calculate the compound interest on the principal
-        double A = principal * compoundFactor;
-
-        // Future value of quarterly contributions
-        double contributionFutureValue = 0.0;
-        double quarterlyContribution = monthlyContribution * 3; // 3 months per quarter
-
-        for (int q = 1; q <= years * 4; q++) { // Loop through each quarter
-            contributionFutureValue += quarterlyContribution * Math.pow(1 + rate / timesPerYear, timesPerYear * ((years * 4 - q + 1) / 4.0));
+        for (int y = 0; y < years; y++) {
+            double quarterlyContribution = currentMonthlyCont * 3;
+            for (int q = 0; q < 4; q++) {
+                currentBalance += quarterlyContribution;
+                totalContribution += quarterlyContribution;
+                double periodsPerQuarter = (double) timesPerYear / 4.0;
+                currentBalance *= Math.pow(1 + rate / timesPerYear, periodsPerQuarter);
+            }
+            currentMonthlyCont *= contributionIncreaseFactor; // Increase for next year
         }
+        double interestEarned = currentBalance - principal - totalContribution;
+        // --- End of final balance calculation ---
 
-        A += contributionFutureValue;
-        double totalContribution = monthlyContribution * 12 * years; // Sum of all contributions
-        double interestEarned = A - principal - totalContribution;
-        double housePriceAtTheEndOfPeriod = housePrice * Math.pow(1 + annualHousePriceIncrease / 100, years);
-        int yearsToBuy = calculateYears(principal, annualInterestRate, timesPerYear, monthlyContribution, housePrice, annualHousePriceIncrease);
+        double housePriceIncreaseRate = annualHousePriceIncrease / 100.0;
+        double housePriceAtTheEndOfPeriod = housePrice * Math.pow(1 + housePriceIncreaseRate, years);
 
-        return new CalculationResult(A, principal, interestEarned, totalContribution, yearsToBuy, housePriceAtTheEndOfPeriod);
+        int yearsToBuy = calculateYears(principal, annualInterestRate, timesPerYear,
+                monthlyContribution, monthlyContributionIncreaseAnnually, // Pass new param
+                housePrice, annualHousePriceIncrease);
+
+        // Ensure CalculationResult constructor uses double
+        return new CalculationResult(currentBalance, principal, interestEarned, totalContribution, yearsToBuy, housePriceAtTheEndOfPeriod);
     }
 
     private int calculateYears(float principal, float annualInterestRate, int timesPerYear,
-                               float monthlyContribution, float housePrice, float annualHousePriceIncrease) {
-        double rate = annualInterestRate / 100;
-        double houseRate = annualHousePriceIncrease / 100;
+                               float initialMonthlyContribution, double monthlyContributionIncreaseAnnually, float initialHousePrice, float annualHousePriceIncrease) {
+        double rate = annualInterestRate / 100.0;
+        double houseRate = annualHousePriceIncrease / 100.0;
+        double contributionIncreaseFactor = 1.0 + (monthlyContributionIncreaseAnnually / 100.0); // New factor
 
-        double A = principal;
-        double currentHousePrice = housePrice;
+        double currentSavings = principal;
+        double currentHousePrice = initialHousePrice;
+        double currentMonthlyContribution = initialMonthlyContribution; // Start with initial
         int year = 0;
 
         double previousGap = Double.MAX_VALUE;
-        int increasingGapYears = 0; // Track consecutive years where the gap increases
-        final int MAX_UNAFFORDABLE_YEARS = 5; // If the gap increases for 5 consecutive years, assume unaffordable
+        int increasingGapYears = 0;
+        final int MAX_CONSECUTIVE_INCREASING_GAP_YEARS = 5;
+        final int MAX_SIMULATION_YEARS = 100; // Safety break
 
-        double quarterlyContribution = monthlyContribution * 3; // Group contributions into quarters
+        if (currentSavings >= currentHousePrice) return 0;
 
-        while (A < currentHousePrice) {
+        while (currentSavings < currentHousePrice) {
             year++;
+            if (year > MAX_SIMULATION_YEARS) return -1; // Safety break
 
-            // Apply quarterly contributions (every 3 months)
-            for (int quarter = 0; quarter < 4; quarter++) {
-                // Before applying interest, add the quarterly contribution
-                A += quarterlyContribution;
-
-                // Apply interest to the total amount
-                A *= Math.pow(1 + rate / timesPerYear, timesPerYear / 4.0); // Interest applied quarterly
+            // Use the contribution amount for the *current* year
+            double quarterlyContribution = currentMonthlyContribution * 3;
+            for (int q = 0; q < 4; q++) {
+                currentSavings += quarterlyContribution;
+                double periodsPerQuarter = (double) timesPerYear / 4.0;
+                currentSavings *= Math.pow(1 + rate / timesPerYear, periodsPerQuarter);
             }
 
-            // Increase house price annually
-            currentHousePrice *= (1 + houseRate);
+            currentHousePrice *= (1 + houseRate); // Increase house price for next comparison
 
-            // Calculate new gap
-            double currentGap = currentHousePrice - A;
+            // Increase contribution amount for the *next* year's calculation
+            currentMonthlyContribution *= contributionIncreaseFactor;
 
-            // If the gap keeps increasing, track it
-            if (currentGap > previousGap) {
+            // Check affordability and gap analysis (logic remains similar)
+            if (currentSavings >= currentHousePrice) break;
+
+            double currentGap = currentHousePrice - currentSavings;
+            if (currentGap > previousGap && year > 1) {
                 increasingGapYears++;
             } else {
-                increasingGapYears = 0; // Reset counter if the gap decreases
+                increasingGapYears = 0;
             }
-
-            // If the gap has increased for 5 consecutive years, assume affordability is impossible
-            if (increasingGapYears >= MAX_UNAFFORDABLE_YEARS) {
-                return -1; // Indicating the house will never be affordable
+            if (increasingGapYears >= MAX_CONSECUTIVE_INCREASING_GAP_YEARS) {
+                return -1; // Unaffordable
             }
-
             previousGap = currentGap;
         }
 
