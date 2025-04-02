@@ -6,15 +6,15 @@ import org.springframework.stereotype.Service;
 @Service
 public class CalculationService {
 
-    public CalculationResult calculate(float principal, float annualInterestRate, int timesPerYear, int years) {
+    public CalculationResult calculate(double principal, double annualInterestRate, int timesPerYear, int years) {
         double rate = annualInterestRate / 100;
         double A = principal * Math.pow(1 + rate / timesPerYear, timesPerYear * years);
         double interestEarned = A - principal;
         return new CalculationResult(A, principal, interestEarned, 0, -1, -1, -1);
     }
 
-    public CalculationResult calculate(float principal, float annualInterestRate, int timesPerYear, int years,
-                                       float monthlyContribution, double monthlyContributionIncreaseAnnually) {
+    public CalculationResult calculate(double principal, double annualInterestRate, int timesPerYear, int years,
+                                       double monthlyContribution, double monthlyContributionIncreaseAnnually) {
         double rate = annualInterestRate / 100.0;
         double contributionIncreaseFactor = 1.0 + (monthlyContributionIncreaseAnnually / 100.0);
 

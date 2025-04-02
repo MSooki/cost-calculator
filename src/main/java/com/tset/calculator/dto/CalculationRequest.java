@@ -1,13 +1,13 @@
 package com.tset.calculator.dto;
 
 public record CalculationRequest(
-        float principal,
-        float annualInterestRate,
+        double principal,
+        double annualInterestRate,
         int timesPerYear,
         int years,
-        float monthlyContribution,
-        float monthlyContributionIncreaseAnnually,
-        float housePrice,
-        float annualHousePriceIncrease,
-        float mortgageAmount
+        double monthlyContribution,
+        double monthlyContributionIncreaseAnnually,
+        double housePrice,
+        double annualHousePriceIncrease,
+        double mortgageAmount
 ) {}
