@@ -31,7 +31,8 @@ public class CalculationController {
                         request.monthlyContribution(),
                         request.monthlyContributionIncreaseAnnually(),
                         request.housePrice(),
-                        request.annualHousePriceIncrease()
+                        request.annualHousePriceIncrease(),
+                        request.mortgageAmount()
                 );
             } else {
                 throw new IllegalArgumentException("Monthly contribution is required when calculating house affordability.");

@@ -8,5 +8,6 @@ public record CalculationRequest(
         float monthlyContribution,
         float monthlyContributionIncreaseAnnually,
         float housePrice,
-        float annualHousePriceIncrease
+        float annualHousePriceIncrease,
+        float mortgageAmount
 ) {}

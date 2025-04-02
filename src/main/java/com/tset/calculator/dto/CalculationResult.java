@@ -6,5 +6,6 @@ public record CalculationResult (
         double interestEarned,
         double totalContribution,
         double years,
-        double housePriceAtTheEndOfPeriod
+        double housePriceAtTheEndOfPeriod,
+        double mortgageAtTheEndOfPeriod
 ){}
