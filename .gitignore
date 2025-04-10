@@ -1,7 +1,6 @@
 HELP.md
 # Gradle directories
 .gradle
-/gradle
 /build
 
 !gradle/wrapper/gradle-wrapper.jar
@@ -40,3 +39,4 @@ out/
 .vscode/
 
 .DS_Store
+src/.DS_Store
