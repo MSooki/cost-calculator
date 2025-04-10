@@ -96,7 +96,7 @@ class CalculationServiceTest {
 
         CalculationResult result = calculationService.calculate(principal, annualInterestRate, timesPerYear, years,
                 monthlyContribution, monthlyContributionIncreaseAnnually,
-                housePrice, annualHousePriceIncrease, maxMortgageAmount);
+                housePrice, annualHousePriceIncrease, maxMortgageAmount, monthlyContributionIncreaseAnnually);
 
         assertEquals(expectedTotalValue, result.totalInvestmentValue(), DELTA);
         assertEquals(principal, result.initialInvestment(), DELTA);
@@ -132,7 +132,7 @@ class CalculationServiceTest {
 
         CalculationResult result = calculationService.calculate(principal, annualInterestRate, timesPerYear, years,
                 monthlyContribution, monthlyContributionIncreaseAnnually,
-                housePrice, annualHousePriceIncrease, maxMortgageAmount);
+                housePrice, annualHousePriceIncrease, maxMortgageAmount, monthlyContributionIncreaseAnnually);
 
         assertEquals(expectedTotalValue, result.totalInvestmentValue(), DELTA);
         assertEquals(principal, result.initialInvestment(), DELTA);

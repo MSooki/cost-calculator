@@ -9,5 +9,6 @@ public record CalculationRequest(
         double monthlyContributionIncreaseAnnually,
         double housePrice,
         double annualHousePriceIncrease,
-        double mortgageAmount
+        double mortgageAmount,
+        double mortgageIncreaseAnnually
 ) {}

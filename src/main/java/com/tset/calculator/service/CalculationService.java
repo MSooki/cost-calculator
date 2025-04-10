@@ -46,14 +46,16 @@ public class CalculationService {
     public CalculationResult calculate(double principal, double annualInterestRate, int timesPerYear, int years,
                                        double monthlyContribution, double monthlyContributionIncreaseAnnually,
                                        double housePrice, double annualHousePriceIncrease,
-                                       double maxMortgageAmount) {
+                                       double maxMortgageAmount, double mortgageIncreaseAnnually) {
 
-        if (principal < 0 || annualInterestRate < 0 || timesPerYear <= 0 || years < 0 || monthlyContribution < 0 || monthlyContributionIncreaseAnnually < 0 || housePrice <= 0 || annualHousePriceIncrease < 0 || maxMortgageAmount < 0) {
+        if (principal < 0 || annualInterestRate < 0 || timesPerYear <= 0 || years < 0 || monthlyContribution < 0 ||
+                monthlyContributionIncreaseAnnually < 0 || housePrice <= 0 || annualHousePriceIncrease < 0 ||
+                maxMortgageAmount < 0 || mortgageIncreaseAnnually < 0) {
             return new CalculationResult(0, principal, 0, 0, -1, 0, 0);
         }
 
         double rate = annualInterestRate / 100.0;
-        double increaseFactor = 1.0 + (monthlyContributionIncreaseAnnually / 100.0);
+        double increaseFactor = (mortgageIncreaseAnnually == 0) ? 1.0 : 1.0 + (mortgageIncreaseAnnually / 100.0);
         double currentBalance = principal;
         double currentMonthlyCont = monthlyContribution;
         double totalContribution = 0;
@@ -82,7 +84,7 @@ public class CalculationService {
         int yearsToBuy = calculateYears(principal, annualInterestRate, timesPerYear,
                 monthlyContribution, monthlyContributionIncreaseAnnually,
                 housePrice, annualHousePriceIncrease,
-                maxMortgageAmount);
+                maxMortgageAmount, mortgageIncreaseAnnually);
 
         return new CalculationResult(
                 currentBalance,
@@ -103,15 +105,17 @@ public class CalculationService {
     private int calculateYears(double principal, double annualInterestRate, int timesPerYear,
                                double initialMonthlyContribution, double monthlyContributionIncreaseAnnually,
                                double initialHousePrice, double annualHousePriceIncrease,
-                               double initialMaxMortgageAmount) {
+                               double initialMaxMortgageAmount, double mortgageIncreaseAnnually) {
 
-        if (principal < 0 || annualInterestRate < 0 || timesPerYear <= 0 || initialMonthlyContribution < 0 || monthlyContributionIncreaseAnnually < 0 || initialHousePrice <= 0 || annualHousePriceIncrease < 0 || initialMaxMortgageAmount < 0) {
+        if (principal < 0 || annualInterestRate < 0 || timesPerYear <= 0 || initialMonthlyContribution < 0 ||
+                monthlyContributionIncreaseAnnually < 0 || initialHousePrice <= 0 || annualHousePriceIncrease < 0 ||
+                initialMaxMortgageAmount < 0 || mortgageIncreaseAnnually < 0) {
             return -1;
         }
 
         double rate = annualInterestRate / 100.0;
         double houseRate = annualHousePriceIncrease / 100.0;
-        double increaseFactor = 1.0 + (monthlyContributionIncreaseAnnually / 100.0);
+        double increaseFactor = (mortgageIncreaseAnnually == 0) ? 1.0 : 1.0 + (mortgageIncreaseAnnually / 100.0);
 
         double currentSavings = principal;
         double currentHousePrice = initialHousePrice;
