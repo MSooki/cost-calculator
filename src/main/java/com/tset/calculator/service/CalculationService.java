@@ -55,7 +55,8 @@ public class CalculationService {
         }
 
         double rate = annualInterestRate / 100.0;
-        double increaseFactor = (mortgageIncreaseAnnually == 0) ? 1.0 : 1.0 + (mortgageIncreaseAnnually / 100.0);
+        double mortgageIncreaseFactor = (mortgageIncreaseAnnually == 0) ? 1.0 : 1.0 + (mortgageIncreaseAnnually / 100.0);
+        double contributionIncreaseFactor = (monthlyContributionIncreaseAnnually == 0) ? 1.0 : 1.0 + (monthlyContributionIncreaseAnnually / 100.0);
         double currentBalance = principal;
         double currentMonthlyCont = monthlyContribution;
         double totalContribution = 0;
@@ -68,7 +69,7 @@ public class CalculationService {
                 double periodsPerQuarter = (double) timesPerYear / 4.0;
                 currentBalance *= Math.pow(1 + rate / timesPerYear, periodsPerQuarter);
             }
-            currentMonthlyCont *= increaseFactor;
+            currentMonthlyCont *= contributionIncreaseFactor;
         }
         double interestEarned = currentBalance - principal - totalContribution;
 
@@ -77,7 +78,7 @@ public class CalculationService {
 
         double mortgageAtTheEndOfPeriod = 0.0;
         if (maxMortgageAmount > 0) {
-            mortgageAtTheEndOfPeriod = maxMortgageAmount * Math.pow(increaseFactor, years);
+            mortgageAtTheEndOfPeriod = maxMortgageAmount * Math.pow(mortgageIncreaseFactor, years);
         }
 
 
@@ -115,7 +116,8 @@ public class CalculationService {
 
         double rate = annualInterestRate / 100.0;
         double houseRate = annualHousePriceIncrease / 100.0;
-        double increaseFactor = (mortgageIncreaseAnnually == 0) ? 1.0 : 1.0 + (mortgageIncreaseAnnually / 100.0);
+        double mortgageIncreaseFactor = (mortgageIncreaseAnnually == 0) ? 1.0 : 1.0 + (mortgageIncreaseAnnually / 100.0);
+        double contributionIncreaseFactor = (monthlyContributionIncreaseAnnually == 0) ? 1.0 : 1.0 + (monthlyContributionIncreaseAnnually / 100.0);
 
         double currentSavings = principal;
         double currentHousePrice = initialHousePrice;
@@ -150,9 +152,9 @@ public class CalculationService {
 
             // --- Update values for the start of the NEXT year ---
             currentHousePrice *= (1 + houseRate);
-            currentMonthlyContribution *= increaseFactor;
+            currentMonthlyContribution *= contributionIncreaseFactor;
             if (useMortgage) {
-                currentMaxMortgageAmount *= increaseFactor;
+                currentMaxMortgageAmount *= mortgageIncreaseFactor;
             }
 
             // --- Check affordability and convergence ---
