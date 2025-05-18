@@ -7,6 +7,9 @@ WORKDIR /app
 # Copy all project files (including already-copied frontend build)
 COPY . .
 
+# For debugging issue in Railway
+RUN ls -la && ls -la gradle/wrapper && echo "Done"
+
 # Build Spring Boot app
 RUN ./gradlew clean build
 
